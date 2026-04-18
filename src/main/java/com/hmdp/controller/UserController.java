@@ -3,9 +3,11 @@ package com.hmdp.controller;
 
 import com.hmdp.dto.LoginFormDTO;
 import com.hmdp.dto.Result;
+import com.hmdp.dto.UserDTO;
 import com.hmdp.entity.UserInfo;
 import com.hmdp.service.IUserInfoService;
 import com.hmdp.service.IUserService;
+import com.hmdp.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,8 +39,8 @@ public class UserController {
     @PostMapping("code")
     public Result sendCode(@RequestParam("phone") String phone, HttpSession session) {
         //发送短信验证码并保存验证码
-        userService.sendCode(phone,session);
-        return Result.success();
+        log.info("收到验证码请求，开始生成验证码");
+        return  userService.sendCode(phone,session);
     }
 
     /**
@@ -48,8 +50,7 @@ public class UserController {
     @PostMapping("/login")
     public Result login(@RequestBody LoginFormDTO loginForm, HttpSession session){
         //登录
-        userService.login(loginForm,session);
-        return Result.success();
+        return userService.login(loginForm,session);
     }
 
     /**
@@ -64,8 +65,9 @@ public class UserController {
 
     @GetMapping("/me")
     public Result me(){
-        // TODO 获取当前登录的用户并返回
-        return Result.error("功能未完成");
+        // 获取当前登录的用户并返回
+        UserDTO user = UserHolder.getUser();
+        return Result.success(user);
     }
 
     @GetMapping("/info/{id}")

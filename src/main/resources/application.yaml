@@ -1,13 +1,13 @@
 server:
   port: 8084
 spring:
-  config:
-    import: optional:application-local.yml
+  profiles:
+    active: local
   application:
     name: hmdp
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/hm_dianping?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/hm_dianping?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: root
   redis:
     host: localhost
