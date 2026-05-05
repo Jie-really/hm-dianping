@@ -7,18 +7,12 @@ import com.hmdp.dto.Result;
 import com.hmdp.entity.Shop;
 import com.hmdp.service.IShopService;
 import com.hmdp.utils.SystemConstants;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
-/**
- * <p>
- * 前端控制器
- * </p>
- *
- * @author 虎哥
- * @since 2021-12-22
- */
+@Slf4j
 @RestController
 @RequestMapping("/shop")
 public class ShopController {
@@ -33,7 +27,8 @@ public class ShopController {
      */
     @GetMapping("/{id}")
     public Result queryShopById(@PathVariable("id") Long id) {
-        return Result.success(shopService.getById(id));
+        log.info("收到查询店铺请求");
+        return Result.success(shopService.querygetById(id));
     }
 
     /**
@@ -56,9 +51,7 @@ public class ShopController {
      */
     @PutMapping
     public Result updateShop(@RequestBody Shop shop) {
-        // 写入数据库
-        shopService.updateById(shop);
-        return Result.success();
+        return shopService.update(shop);
     }
 
     /**
