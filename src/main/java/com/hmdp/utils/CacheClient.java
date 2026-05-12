@@ -86,7 +86,7 @@ public class CacheClient {
         R r = JSONUtil.toBean(data, type);
         LocalDateTime expireTime = redisData.getExpireTime();
         //4.判断是否过期
-        if(expireTime.isAfter(LocalDateTime.now())){
+        if(expireTime != null && expireTime.isAfter(LocalDateTime.now())){
             //5.未过期，直接返回店铺信息
             return r;
         }

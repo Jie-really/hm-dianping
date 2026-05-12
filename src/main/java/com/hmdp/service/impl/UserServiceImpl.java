@@ -18,6 +18,7 @@ import org.springframework.web.servlet.View;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -29,9 +30,6 @@ import static com.hmdp.utils.SystemConstants.USER_NICK_NAME_PREFIX;
  * <p>
  * 服务实现类
  * </p>
- *
- * @author 虎哥
- * @since 2021-12-22
  */
 @Slf4j
 @Service
@@ -71,8 +69,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             //2.如果不符合，返回错误信息
             return Result.error("手机号码格式错误");
         }
-
-        //3.校验验证码
+        //3.从Redis中取得验证码并校验
         String code = loginForm.getCode();
         String cacheCode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY+phone);
         if(code==null||!code.equals(cacheCode)){
@@ -80,26 +77,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             return Result.error("验证码错误");
         }
 
-        //4.符合，查询用户
+        //3.符合，查询用户
         User user = query().eq("phone",phone).one();
 
-        //5.判断用户是否存在
+        //4.判断用户是否存在
         if(user==null){
-            // 6.不存在，创建用户并保存
-            user=createUserWithhPhone(phone);
+            // 5.不存在，创建用户并保存
+            user = createUserWithhPhone(phone);
         }
 
-        //7.将用户保存到redis
-        //7.1随机生成token，作为登录令牌
+        //6.将用户保存到redis
+        //6.1随机生成token，作为登录令牌
         String token = UUID.randomUUID().toString().replaceAll("-","");
-        //7.2将User对象转为Hash存储
-        UserDTO userDTO = BeanUtil.copyProperties("user",UserDTO.class);
-        Map<String, Object> userMap = BeanUtil.beanToMap(userDTO);
-        //7.3存储
+        //6.2将User对象转为Hash存储
+        UserDTO userDTO = BeanUtil.copyProperties(user,UserDTO.class);
+        Map<String, String> userMap = new HashMap<>();
+        userMap.put("id", String.valueOf(userDTO.getId()));        // Long 转 String
+        userMap.put("nickName", userDTO.getNickName() != null ? userDTO.getNickName() : "");
+        userMap.put("icon", userDTO.getIcon() != null ? userDTO.getIcon() : "");
+        //6.3存储
         stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY+token,userMap);
-        //7.4设置有效期
+        //6.4设置有效期
         stringRedisTemplate.expire(LOGIN_USER_KEY+token,LOGIN_USER_TTL, TimeUnit.MINUTES);
-        //8.返回token
+        //7.返回token
         return Result.success(token);
     }
 

@@ -37,10 +37,10 @@ public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> i
     @Override
     public Result queryTypeList() {
         String key = CACHE_SHOP_TYPE_KEY;
-        //在Redis里查询
+        //1.在Redis里查询
         log.info("开始在Redis中查询");
         List<String> shopTypeJsonList = stringRedisTemplate.opsForList().range(key,0,-1);
-        //存在，返回
+        //2.存在，返回
         if(shopTypeJsonList != null && !shopTypeJsonList.isEmpty()){
             log.info("Redis中查询成功！");
             // JSON字符串转对象 排序后返回
@@ -51,10 +51,10 @@ public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> i
             Collections.sort(shopTypes, Comparator.comparingInt(ShopType::getSort));
             return Result.success(shopTypes);
         }
-        //不存在，在sql里查询
+        //3.不存在，在sql里查询
         log.info("未在Redis中查询到，将前往数据库查询。。。");
         List<ShopType> shopTypes = query().orderByAsc("sort").list();
-        //不存在，返回错误信息
+        //4.不存在，返回错误信息
         if(shopTypes==null){
             log.info("店铺类型不存在");
             return Result.error("店铺类型不存在");

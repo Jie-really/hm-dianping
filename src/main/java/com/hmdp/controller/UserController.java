@@ -67,6 +67,10 @@ public class UserController {
     public Result me(){
         // 获取当前登录的用户并返回
         UserDTO user = UserHolder.getUser();
+        log.info("user:{}",user);
+        if (user == null) {
+            return Result.error("用户未登录");
+        }
         return Result.success(user);
     }
 
