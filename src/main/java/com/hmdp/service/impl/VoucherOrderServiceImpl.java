@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.utils.RedisIdWorker;
 import com.hmdp.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,28 +52,47 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             //库存不足
             return Result.error("库存不足！");
         }
-        //5.扣减库存
+        Long userId = UserHolder.getUser().getId();
+        synchronized (userId.toString().intern()) {
+            //获得代理对象（事务）
+            IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
+            return proxy.creatVoucherOrder(voucherId);
+        }
+    }
+
+    @Transactional
+    public Result creatVoucherOrder(Long voucherId) {
+        //5.一人一单
+        Long userId = UserHolder.getUser().getId();
+        // 5.1.查询订单
+        int count = query().eq("user_id", userId).eq("voucher_id", voucherId).count();
+        // 5.2.判断是否存在
+        if (count > 0) {
+            //用户已经购买过了
+            return Result.error("用户已经购买过了!");
+        }
+        //6.扣减库存
         boolean success = seckillVoucherService.update()
                 .setSql("stock = stock - 1").eq("voucher_id", voucherId).gt("stock", 0)
                 .update();
-        if(!success){
+        if (!success) {
             //扣减失败
             return Result.error("库存不足！");
         }
-        //6.创建订单
+        //7.创建订单
         VoucherOrder voucherOrder = new VoucherOrder();
-        //订单id
+        // 7.1订单id
         Long orderId = redisIdWorker.nextId("order");
         voucherOrder.setId(orderId);
-        //用户id
-        Long userId=UserHolder.getUser().getId();
-        log.info("userId:{}",userId);
-        log.info("User:{}",UserHolder.getUser());
+        // 7.2用户id
+        log.info("userId:{}", userId);
+        log.info("User:{}", UserHolder.getUser());
         voucherOrder.setUserId(userId);
-        //代金券id
+        // 7.3代金券id
         voucherOrder.setVoucherId(voucherId);
         save(voucherOrder);
-        //7.返回订单id
+        //8.返回订单id
         return Result.success(orderId);
     }
+
 }
