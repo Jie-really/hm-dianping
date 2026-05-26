@@ -77,7 +77,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                             StreamOffset.create(queueName, ReadOffset.lastConsumed())//结束标识，>
                     );
                     // 2.判断消息获取是否成功
-                    if(list.isEmpty() || list == null){
+                    if(list == null || list.isEmpty()){
                         // 2.1.获取失败，说明没有订单，下一次循环
                         continue;
                     }
@@ -106,7 +106,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                             StreamOffset.create(queueName, ReadOffset.from("0"))
                     );
                     // 2.判断消息获取是否成功
-                    if(list.isEmpty() || list == null){
+                    if(list == null || list.isEmpty()){
                         // 2.1.获取失败，说明pending-list没有异常消息，结束循环
                         break;
                     }
