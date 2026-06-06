@@ -10,6 +10,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 @Slf4j
@@ -44,19 +47,17 @@ public class UploadController {
         return Result.success();
     }
 
-    private String createNewFileName(String originalFilename) {
+    private String createNewFileName(String originalFilename) throws IOException {
         // 获取后缀
         String suffix = StrUtil.subAfter(originalFilename, ".", true);
         // 生成目录
         String name = UUID.randomUUID().toString();
         int hash = name.hashCode();
-        int d1 = hash & 0xF;
+        int d1 = hash & 0xF;//0xF二进制是1111，此举是为了取低四位值
         int d2 = (hash >> 4) & 0xF;
         // 判断目录是否存在
-        File dir = new File(SystemConstants.IMAGE_UPLOAD_DIR, StrUtil.format("/blogs/{}/{}", d1, d2));
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
+        Path dirPath = Paths.get(SystemConstants.IMAGE_UPLOAD_DIR, StrUtil.format("/blogs/{}/{}", d1, d2));
+        Files.createDirectories(dirPath);
         // 生成文件名
         return StrUtil.format("/blogs/{}/{}/{}.{}", d1, d2, name, suffix);
     }

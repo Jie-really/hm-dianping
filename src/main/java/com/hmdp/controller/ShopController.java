@@ -28,8 +28,7 @@ public class ShopController {
     @GetMapping("/{id}")
     public Result queryShopById(@PathVariable("id") Long id) {
         log.info("收到查询店铺请求");
-        //return Result.success(shopService.querygetById(id));显示NAN
-        return (Result) shopService.querygetById(id);
+        return  shopService.querygetById(id);
     }
 
     /**

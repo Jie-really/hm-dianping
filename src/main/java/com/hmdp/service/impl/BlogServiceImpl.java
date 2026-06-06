@@ -181,12 +181,12 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         // 3.解析数据：blogId,score(时间戳）,offset
         List<Long> ids = new ArrayList<>(typedTuples.size());
         long minTime = 0;
+        int os = 1;
         for(ZSetOperations.TypedTuple<String> tuple : typedTuples){
             // 3.1.获取id
             ids.add(Long.valueOf(tuple.getValue()));
             // 3.2.获取score(时间戳),offset
             long time = tuple.getScore().longValue();
-            int os = 1;
             if(time == minTime){
                 os++;
             }else {
@@ -206,7 +206,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         // 5.封装并返回
         ScrollResult r = new ScrollResult();
         r.setList(blogs);
-        r.setOffset(offset);
+        r.setOffset(os);
         r.setMinTime(minTime);
         return Result.success(r);
     }
