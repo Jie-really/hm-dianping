@@ -19,8 +19,12 @@ public class ChatController {
 
     @PostMapping("/ask")
     public Map<String, String> ask(@RequestBody Map<String, String> request) {
+        String sessionId = request.get("sessionId");
         String userMessage = request.get("message");
-        String reply = chatService.chat(userMessage);
+        if (sessionId == null || sessionId.trim().isEmpty()) {
+            sessionId = "defauld";
+        }
+        String reply = chatService.chat(sessionId,userMessage);
         Map<String, String> response = new HashMap<>();
         response.put("reply", reply);
         return response;

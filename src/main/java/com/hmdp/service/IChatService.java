@@ -6,5 +6,5 @@ public interface IChatService {
      * @param userMessage 用户输入的消息
      * @return AI返回的回复
      */
-    String chat(String userMessage);
+    String chat(String sessionId, String userMessage);
 }
